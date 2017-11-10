@@ -77,6 +77,16 @@ class user:
 
     @staticmethod
     def getuser(data):
-        print('in self')
-        print(data)
+        id = data['id']
+        if id == 1:
+            return {'email': 'jessehogan0@gmail.com'}
+        elif id == 2:
+            return {'email': 'dhogan.d@gmail.com'}
+        elif id == 3:
+            from time import sleep
+            sleep(10)
+
+            return {'email': 'sleepy@gmail.com'}
+        else:
+            raise ValueError('Invalid user id: ' + str(id))
 
