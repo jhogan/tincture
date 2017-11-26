@@ -4,71 +4,84 @@ from functools import reduce
 import pdb; B=pdb.set_trace
 from pprint import pprint
 
-def app(env, sres):
-    try:
+class application:
+
+    @property
+    def environment(self):
+        return self._env 
+
+    def __call__(self, env, sres):
+        
+        self._env = env
+        
         try:
-            reqsize = int(env.get('CONTENT_LENGTH', 0))
-        except(ValueError):
-            reqsize = 0
+            try:
+                reqsize = int(self.environment.get('CONTENT_LENGTH', 0))
+            except(ValueError):
+                reqsize = 0
 
-        reqbody = env['wsgi.input'].read(reqsize).decode('utf-8')
+            reqbody = self.environment['wsgi.input'].read(reqsize).decode('utf-8')
 
-        if len(reqbody) == 0:
-            raise http400('No data in post')
-            
-        try:
-            reqdata = json.loads(reqbody)
-        except json.JSONDecodeError as ex:
-            raise http400(str(ex))
+            if len(reqbody) == 0:
+                raise http400('No data in post')
+                
+            try:
+                reqdata = json.loads(reqbody)
+            except json.JSONDecodeError as ex:
+                raise http400(str(ex))
 
-        try:
-            cls = reqdata['_class']
-        except KeyError:
-            msg = 'The class value was not supplied. Check input.'
-            raise ValueError(msg)
+            try:
+                cls = reqdata['_class']
+            except KeyError:
+                msg = 'The class value was not supplied. Check input.'
+                raise ValueError(msg)
 
-        classes = ['user']
+            classes = ['user']
 
-        if cls not in classes:
-            raise http404('Invalid class')
+            if cls not in classes:
+                raise http404('Invalid class')
 
-        cls  = reduce(getattr, cls.split('.'), sys.modules[__name__])
+            cls  = reduce(getattr, cls.split('.'), sys.modules[__name__])
 
-        try:
-            meth = reqdata['_method']
-        except KeyError:
-            msg = 'The method value was not supplied. Check input.'
-            raise ValueError(msg)
-        if meth[0] == '_':
-            raise http404('Invalid method')
+            try:
+                meth = reqdata['_method']
+            except KeyError:
+                msg = 'The method value was not supplied. Check input.'
+                raise ValueError(msg)
+            if meth[0] == '_':
+                raise http404('Invalid method')
 
-        data = getattr(cls, meth)(reqdata)
+            data = getattr(cls, meth)(reqdata)
 
 
-    except Exception as ex:
-        if isinstance(ex, httperror):
-            statuscode = ex.statuscode
+        except Exception as ex:
+            if isinstance(ex, httperror):
+                statuscode = ex.statuscode
+            else:
+                statuscode = '500 Internal Server Error'
+
+            data = {'_exception': repr(ex)}
+
         else:
-            statuscode = '500 Internal Server Error'
+            statuscode = '200 OK'
 
-        data = {'_exception': repr(ex)}
+        finally:
+            data = json.dumps(data)
+            data = bytes(data, 'utf-8')
 
-    else:
-        statuscode = '200 OK'
+            resheads=[
+                ('Content-Length', str(len(data))),
+                ('Content-Type', 'application/json'),
+                ('Access-Control-Allow-Origin', '*'),
 
-    finally:
-        data = json.dumps(data)
-        data = bytes(data, 'utf-8')
+            ]
 
-        resheads=[
-            ('Content-Length', str(len(data))),
-            ('Content-Type', 'application/json'),
-            ('Access-Control-Allow-Origin', '*'),
+            sres(statuscode, resheads)
+            return iter([data])
 
-        ]
+app = application()
+    
 
-        sres(statuscode, resheads)
-        return iter([data])
 
 class httperror(Exception):
     def __init__(self, statuscode, msg):
