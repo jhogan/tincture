@@ -2,6 +2,7 @@ import json
 import sys
 from functools import reduce
 import pdb; B=pdb.set_trace
+from pprint import pprint
 
 def app(env, sres):
     try:
