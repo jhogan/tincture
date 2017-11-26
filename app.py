@@ -20,6 +20,33 @@ class application:
     def environment(self):
         return self._env 
 
+    def demandvalid(self):
+        if len(self.requestbody) == 0:
+            raise http400('No data in body of request message.')
+
+        try:
+            reqdata = self.requestdata
+        except json.JSONDecodeError as ex:
+            raise http400(str(ex))
+
+        try:
+            cls = reqdata['_class']
+        except KeyError:
+            msg = 'The class value was not supplied.'
+            raise http404(msg)
+
+        try:
+            meth = self.method
+        except KeyError:
+            msg = 'The method value was not supplied.'
+            raise ValueError(msg)
+
+        if meth[0] == '_':
+            raise http403('Invalid method')
+
+        if cls not in self.classes:
+            raise http403('Invalid class')
+        
     @property
     def requestsize(self):
         if self._requestsize == None:
@@ -34,46 +61,28 @@ class application:
         if self._requestbody == None:
             reqsize = self.requestsize
             self._requestbody = self.environment['wsgi.input'].read(reqsize).decode('utf-8')
-            if len(self._requestbody) == 0:
-                raise http400('No data in post')
         return self._requestbody
 
     @property
     def requestdata(self):
         if self._requestdata == None:
             reqbody = self.requestbody
-
-            try:
-                self._requestdata = json.loads(reqbody)
-            except json.JSONDecodeError as ex:
-                raise http400(str(ex))
+            self._requestdata = json.loads(reqbody)
         return self._requestdata
 
     @property
     def class_(self):
         if self._class == None:
-            try:
-                reqdata = self.requestdata
-                cls = reqdata['_class']
-                if cls not in self.classes:
-                    raise http404('Invalid class')
-                self._class  = reduce(getattr, cls.split('.'), sys.modules[__name__])
-            except KeyError:
-                msg = 'The class value was not supplied. Check input.'
-                raise ValueError(msg)
+            reqdata = self.requestdata
+            cls = reqdata['_class'] 
+            self._class  = reduce(getattr, cls.split('.'), sys.modules[__name__])
         return self._class
 
     @property
     def method(self):
         if self._method == None:
-            try:
-                reqdata = self.requestdata
-                self._method = reqdata['_method']
-            except KeyError:
-                msg = 'The method value was not supplied. Check input.'
-                raise ValueError(msg)
-            if self._method[0] == '_':
-                raise http404('Invalid method')
+            reqdata = self.requestdata
+            self._method = reqdata['_method']
         return self._method
 
     @property
@@ -81,11 +90,12 @@ class application:
         return ['user']
 
     def __call__(self, env, sres):
-        
         self.clear()
         self._env = env
-        
+
         try:
+            self.demandvalid()
+
             reqdata = self.requestdata
 
             cls, meth = self.class_, self.method
@@ -130,6 +140,11 @@ class httperror(Exception):
 class http404(httperror):
     def __init__(self, msg):
         super().__init__('404 Not Found', msg)
+
+class http403(httperror):
+    def __init__(self, msg):
+        super().__init__('403 Forbidden', msg)
+
 
 class http400(httperror):
     def __init__(self, msg):
