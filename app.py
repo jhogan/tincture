@@ -12,8 +12,14 @@ def app(env, sres):
             reqsize = 0
 
         reqbody = env['wsgi.input'].read(reqsize).decode('utf-8')
-        reqdata = json.loads(reqbody)
 
+        if len(reqbody) == 0:
+            raise http400('No data in post')
+            
+        try:
+            reqdata = json.loads(reqbody)
+        except json.JSONDecodeError as ex:
+            raise http400(str(ex))
 
         try:
             cls = reqdata['_class']
@@ -75,6 +81,10 @@ class httperror(Exception):
 class http404(httperror):
     def __init__(self, msg):
         super().__init__('404 Not Found', msg)
+
+class http400(httperror):
+    def __init__(self, msg):
+        super().__init__('400 Bad Request', msg)
 
 class user:
 
