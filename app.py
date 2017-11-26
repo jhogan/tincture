@@ -5,54 +5,92 @@ import pdb; B=pdb.set_trace
 from pprint import pprint
 
 class application:
+    
+    def __init__(self):
+        self.clear()
+
+    def clear(self):
+        self._requestbody = None
+        self._requestsize = None
+        self._requestdata = None
+        self._class = None
+        self._method = None
 
     @property
     def environment(self):
         return self._env 
 
-    def __call__(self, env, sres):
-        
-        self._env = env
-        
-        try:
+    @property
+    def requestsize(self):
+        if self._requestsize == None:
             try:
-                reqsize = int(self.environment.get('CONTENT_LENGTH', 0))
+                self._requestsize = int(self.environment.get('CONTENT_LENGTH', 0))
             except(ValueError):
-                reqsize = 0
-
-            reqbody = self.environment['wsgi.input'].read(reqsize).decode('utf-8')
-
-            if len(reqbody) == 0:
+                self._requestsize = 0
+        return self._requestsize
+           
+    @property
+    def requestbody(self):
+        if self._requestbody == None:
+            reqsize = self.requestsize
+            self._requestbody = self.environment['wsgi.input'].read(reqsize).decode('utf-8')
+            if len(self._requestbody) == 0:
                 raise http400('No data in post')
-                
+        return self._requestbody
+
+    @property
+    def requestdata(self):
+        if self._requestdata == None:
+            reqbody = self.requestbody
+
             try:
-                reqdata = json.loads(reqbody)
+                self._requestdata = json.loads(reqbody)
             except json.JSONDecodeError as ex:
                 raise http400(str(ex))
+        return self._requestdata
 
+    @property
+    def class_(self):
+        if self._class == None:
             try:
+                reqdata = self.requestdata
                 cls = reqdata['_class']
+                if cls not in self.classes:
+                    raise http404('Invalid class')
+                self._class  = reduce(getattr, cls.split('.'), sys.modules[__name__])
             except KeyError:
                 msg = 'The class value was not supplied. Check input.'
                 raise ValueError(msg)
+        return self._class
 
-            classes = ['user']
-
-            if cls not in classes:
-                raise http404('Invalid class')
-
-            cls  = reduce(getattr, cls.split('.'), sys.modules[__name__])
-
+    @property
+    def method(self):
+        if self._method == None:
             try:
-                meth = reqdata['_method']
+                reqdata = self.requestdata
+                self._method = reqdata['_method']
             except KeyError:
                 msg = 'The method value was not supplied. Check input.'
                 raise ValueError(msg)
-            if meth[0] == '_':
+            if self._method[0] == '_':
                 raise http404('Invalid method')
+        return self._method
+
+    @property
+    def classes(self):
+        return ['user']
+
+    def __call__(self, env, sres):
+        
+        self.clear()
+        self._env = env
+        
+        try:
+            reqdata = self.requestdata
+
+            cls, meth = self.class_, self.method
 
             data = getattr(cls, meth)(reqdata)
-
 
         except Exception as ex:
             if isinstance(ex, httperror):
@@ -80,8 +118,6 @@ class application:
             return iter([data])
 
 app = application()
-    
-
 
 class httperror(Exception):
     def __init__(self, statuscode, msg):
