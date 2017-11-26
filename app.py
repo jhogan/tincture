@@ -100,7 +100,8 @@ class application:
 
             cls, meth = self.class_, self.method
 
-            data = getattr(cls, meth)(reqdata)
+            obj = cls(self)
+            data = getattr(obj, meth)()
 
         except Exception as ex:
             if isinstance(ex, httperror):
@@ -121,7 +122,6 @@ class application:
                 ('Content-Length', str(len(data))),
                 ('Content-Type', 'application/json'),
                 ('Access-Control-Allow-Origin', '*'),
-
             ]
 
             sres(statuscode, resheads)
@@ -150,11 +150,22 @@ class http400(httperror):
     def __init__(self, msg):
         super().__init__('400 Bad Request', msg)
 
-class user:
+class controller:
+    def __init__(self, app):
+        self._app = app
 
-    @staticmethod
-    def getuser(data):
-        id = data['id']
+    @property
+    def application(self):
+        return self._app
+
+    @property
+    def data(self):
+        return self.application.requestdata
+
+class user(controller):
+
+    def getuser(self):
+        id = self.data['id']
         if id == 1:
             return {'email': 'jessehogan0@gmail.com'}
         elif id == 2:
