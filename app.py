@@ -55,8 +55,10 @@ def app(env, sres):
         data = bytes(data, 'utf-8')
 
         resheads=[
-            ('Content-length', str(len(data))),
-            ('Content-type', 'application/json')
+            ('Content-Length', str(len(data))),
+            ('Content-Type', 'application/json'),
+            ('Access-Control-Allow-Origin', '*'),
+
         ]
 
         sres(statuscode, resheads)
