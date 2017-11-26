@@ -5,8 +5,11 @@ import pdb; B=pdb.set_trace
 from pprint import pprint
 
 class application:
-    
     def __init__(self):
+
+        # TODO Put this in config file
+        sys.path.append('/var/www/qa/rpc')
+
         self.clear()
 
     def clear(self):
@@ -46,6 +49,11 @@ class application:
 
         if cls not in self.classes:
             raise http403('Invalid class')
+
+        try:
+            import ctrl
+        except ImportError:
+            raise ImportError("Controller path not found.")
         
     @property
     def requestsize(self):
@@ -75,7 +83,7 @@ class application:
         if self._class == None:
             reqdata = self.requestdata
             cls = reqdata['_class'] 
-            self._class  = reduce(getattr, cls.split('.'), sys.modules[__name__])
+            self._class = reduce(getattr, cls.split('.'), sys.modules['ctrl'])
         return self._class
 
     @property
@@ -162,19 +170,4 @@ class controller:
     def data(self):
         return self.application.requestdata
 
-class user(controller):
-
-    def getuser(self):
-        id = self.data['id']
-        if id == 1:
-            return {'email': 'jessehogan0@gmail.com'}
-        elif id == 2:
-            return {'email': 'dhogan.d@gmail.com'}
-        elif id == 3:
-            from time import sleep
-            sleep(10)
-
-            return {'email': 'sleepy@gmail.com'}
-        else:
-            raise ValueError('Invalid user id: ' + str(id))
-
+app = application()
