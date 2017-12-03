@@ -45,10 +45,10 @@ class application:
             raise ValueError(msg)
 
         if meth[0] == '_':
-            raise http403('Invalid method')
+            raise http403('Invalid method.')
 
         if cls not in self.classes:
-            raise http403('Invalid class')
+            raise http403('Invalid class.')
 
         try:
             import ctrl
@@ -109,6 +109,7 @@ class application:
             cls, meth = self.class_, self.method
 
             obj = cls(self)
+
             data = getattr(obj, meth)()
 
         except Exception as ex:
@@ -134,8 +135,6 @@ class application:
 
             sres(statuscode, resheads)
             return iter([data])
-
-app = application()
 
 class httperror(Exception):
     def __init__(self, statuscode, msg):
@@ -169,5 +168,9 @@ class controller:
     @property
     def data(self):
         return self.application.requestdata
+
+    @property
+    def arguments(self):
+        return self.application.requestdata['args']
 
 app = application()
