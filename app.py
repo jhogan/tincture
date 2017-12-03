@@ -98,10 +98,11 @@ class application:
         return ['user']
 
     def __call__(self, env, sres):
-        self.clear()
-        self._env = env
-
         try:
+            self.clear()
+
+            self._env = env
+
             self.demandvalid()
 
             reqdata = self.requestdata
