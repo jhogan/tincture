@@ -3,6 +3,8 @@ import sys
 from functools import reduce
 import pdb; B=pdb.set_trace
 from pprint import pprint
+import traceback
+import re
 
 class application:
     def __init__(self):
@@ -112,7 +114,15 @@ class application:
             else:
                 statuscode = '500 Internal Server Error'
 
-            data = {'_exception': repr(ex)}
+            # Get the stack trace
+            tb = traceback.format_exception(etype=None, value=None, tb=ex.__traceback__)
+
+            # The top and bottom of the stack trace don't correspond to frames, so remove them
+            tb.pop(); tb.pop(0)
+
+            tb = [re.split('\n +', f.strip()) for f in tb]
+
+            data = {'_exception': repr(ex), '_traceback': tb}
 
         else:
             statuscode = '200 OK'
