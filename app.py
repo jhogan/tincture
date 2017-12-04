@@ -108,6 +108,8 @@ class application:
 
             data = getattr(obj, meth)()
 
+            data = [] if data == None else data
+
         except Exception as ex:
             if isinstance(ex, httperror):
                 statuscode = ex.statuscode
