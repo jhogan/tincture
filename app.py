@@ -150,6 +150,11 @@ class httperror(Exception):
     def __repr__(self):
         return self.message
 
+class http422(httperror):
+    def __init__(self, msg):
+        super().__init__('422 Unprocessable Entity', msg)
+
+
 class http404(httperror):
     def __init__(self, msg):
         super().__init__('404 Not Found', msg)
@@ -176,7 +181,14 @@ class controller:
         return self.application.requestdata
 
     @property
-    def arguments(self):
+    def _arguments(self):
         return self.application.requestdata['args']
+
+    def getargument(self, arg):
+        args = self._arguments
+        try:
+            return args[arg]
+        except KeyError:
+            raise http422('Argument not supplied: ' + arg)
 
 app = application()
