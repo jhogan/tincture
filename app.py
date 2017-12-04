@@ -47,9 +47,6 @@ class application:
         if meth[0] == '_':
             raise http403('Invalid method.')
 
-        if cls not in self.classes:
-            raise http403('Invalid class.')
-
         try:
             import ctrl
         except ImportError:
@@ -92,10 +89,6 @@ class application:
             reqdata = self.requestdata
             self._method = reqdata['_method']
         return self._method
-
-    @property
-    def classes(self):
-        return ['user']
 
     def __call__(self, env, sres):
         try:
