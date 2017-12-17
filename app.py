@@ -164,6 +164,10 @@ class http403(httperror):
         super().__init__('403 Forbidden', msg)
 
 
+class http401(httperror):
+    def __init__(self, msg):
+        super().__init__('401 Unauthorized', msg)
+
 class http400(httperror):
     def __init__(self, msg):
         super().__init__('400 Bad Request', msg)
