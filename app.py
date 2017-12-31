@@ -79,8 +79,8 @@ class application:
 
         try:
             import ctrl
-        except ImportError:
-            raise ImportError("Controller path not found.")
+        except ImportError as ex:
+            raise ImportError('Error importing controller: ' + str(ex))
         
     @property
     def requestsize(self):
