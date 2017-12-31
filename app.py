@@ -5,12 +5,40 @@ import pdb; B=pdb.set_trace
 from pprint import pprint
 import traceback
 import re
+import os
 
 class application:
     def __init__(self):
 
-        # TODO Put this in config file
-        sys.path.append('/var/www/qa/rpc')
+        try:
+            epiphanypath = os.environ['epiphanypath']
+        except KeyError:
+            print('WARNING: No Epiphany path found in environment')
+        else:
+            sys.path.append(epiphanypath)
+            from configfile import configfile
+
+            try:
+                epiphany_yaml = os.environ['epiphany.yaml']
+            except KeyError:
+                print('WARNING: No config file found in environment')
+            else:
+                cfg = configfile.getinstance()
+                cfg.file = epiphany_yaml
+
+        try:
+            ctrlpath = os.environ['ctrlpath']
+        except KeyError:
+            print('WARNING: No controller path found in environment')
+        else:
+            sys.path.append(ctrlpath)
+
+        try:
+            epiphenomenonpath = os.environ['epiphenomenonpath']
+        except KeyError:
+            print('WARNING: No Epiphenomenon path found in environment')
+        else:
+            sys.path.append(epiphenomenonpath)
 
         self.clear()
 
