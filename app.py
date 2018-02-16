@@ -221,6 +221,6 @@ class controller:
         try:
             return args[arg]
         except KeyError:
-            raise http422('Argument not supplied: ' + arg)
+            return None
 
 app = application()
