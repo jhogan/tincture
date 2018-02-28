@@ -63,7 +63,7 @@ class application:
             raise http400(str(ex))
 
         try:
-            cls = reqdata['_class']
+            cls = reqdata['__class']
         except KeyError:
             msg = 'The class value was not supplied.'
             raise http404(msg)
@@ -109,7 +109,7 @@ class application:
     def class_(self):
         if self._class == None:
             reqdata = self.requestdata
-            cls = reqdata['_class'] 
+            cls = reqdata['__class'] 
             self._class = reduce(getattr, cls.split('.'), sys.modules['ctrl'])
         return self._class
 
@@ -117,7 +117,7 @@ class application:
     def method(self):
         if self._method == None:
             reqdata = self.requestdata
-            self._method = reqdata['_method']
+            self._method = reqdata['__method']
         return self._method
 
     def __call__(self, env, sres):
@@ -152,7 +152,7 @@ class application:
 
             tb = [re.split('\n +', f.strip()) for f in tb]
 
-            data = {'_exception': repr(ex), '_traceback': tb}
+            data = {'__exception': repr(ex), '__traceback': tb}
 
         else:
             statuscode = '200 OK'
