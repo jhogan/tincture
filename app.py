@@ -19,7 +19,7 @@ class application:
             from configfile import configfile
 
             try:
-                epiphany_yaml = os.environ['epiphany.yaml']
+                epiphany_yaml = os.environ['epiphany_yaml']
             except KeyError:
                 print('WARNING: No config file found in environment')
             else:
