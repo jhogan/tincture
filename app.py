@@ -94,15 +94,22 @@ class application:
     @property
     def requestbody(self):
         if self._requestbody == None:
-            reqsize = self.requestsize
-            self._requestbody = self.environment['wsgi.input'].read(reqsize).decode('utf-8')
+            wsgiinput = self.environment['wsgi.input']
+            if type(wsgiinput) == dict:
+                self._requestbody = wsgiinput
+            else:
+                reqsize = self.requestsize
+                self._requestbody = self.environment['wsgi.input'].read(reqsize).decode('utf-8')
         return self._requestbody
 
     @property
     def requestdata(self):
         if self._requestdata == None:
             reqbody = self.requestbody
-            self._requestdata = json.loads(reqbody)
+            if type(reqbody) == dict:
+                self._requestdata = reqbody
+            else:
+                self._requestdata = json.loads(reqbody)
         return self._requestdata
 
     @property
