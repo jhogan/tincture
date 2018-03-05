@@ -243,4 +243,15 @@ class controller:
         except KeyError:
             return None
 
+    @staticmethod
+    def convertbrokenrules(ent):
+        brs = []
+        for br in ent.brokenrules:
+            brs.append({
+                'property':  br.property,
+                'message':   br.message,
+                'type':      br.type
+            })
+        return brs
+
 app = application()
