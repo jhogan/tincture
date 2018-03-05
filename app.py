@@ -130,6 +130,7 @@ class application:
         return self._method
 
     def __call__(self, env, sres):
+        statuscode = None
         try:
             self.clear()
 
@@ -146,6 +147,13 @@ class application:
             data = getattr(obj, meth)()
 
             data = [] if data == None else data
+
+            try:
+                br = data['__brokenrules']
+                if len(br):
+                    statuscode = '422 Unprocessable Entity'
+            except KeyError:
+                pass
 
         except Exception as ex:
             if isinstance(ex, httperror):
@@ -164,7 +172,8 @@ class application:
             data = {'__exception': repr(ex), '__traceback': tb}
 
         else:
-            statuscode = '200 OK'
+            if not statuscode:
+                statuscode = '200 OK'
 
         finally:
             data = json.dumps(data)
