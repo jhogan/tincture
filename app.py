@@ -234,7 +234,7 @@ class controller:
 
     @property
     def _arguments(self):
-        return self.application.requestdata['args']
+        return self.application.requestdata['__args']
 
     def getargument(self, arg):
         args = self._arguments
