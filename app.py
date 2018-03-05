@@ -10,33 +10,35 @@ import os
 class application:
     def __init__(self):
 
+        # TODO:CAR-53 Uppercase environment variables 
+        err = sys.stderr
         try:
             epiphanypath = os.environ['epiphanypath']
         except KeyError:
-            print('WARNING: No Epiphany path found in environment')
+            print('WARNING: No Epiphany path found in environment', file=err)
         else:
             sys.path.append(epiphanypath)
-            from configfile import configfile
 
             try:
                 epiphany_yaml = os.environ['epiphany_yaml']
             except KeyError:
-                print('WARNING: No config file found in environment')
+                print('WARNING: No config file found in environment', file=err)
             else:
+                from configfile import configfile
                 cfg = configfile.getinstance()
                 cfg.file = epiphany_yaml
 
         try:
             ctrlpath = os.environ['ctrlpath']
         except KeyError:
-            print('WARNING: No controller path found in environment')
+            print('WARNING: No controller path found in environment', file=err)
         else:
             sys.path.append(ctrlpath)
 
         try:
             epiphenomenonpath = os.environ['epiphenomenonpath']
         except KeyError:
-            print('WARNING: No Epiphenomenon path found in environment')
+            print('WARNING: No Epiphenomenon path found in environment', file=err)
         else:
             sys.path.append(epiphenomenonpath)
 
