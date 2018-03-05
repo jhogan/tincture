@@ -155,6 +155,8 @@ class application:
             except KeyError:
                 pass
 
+            data['__exception'] = None
+
         except Exception as ex:
             if isinstance(ex, httperror):
                 statuscode = ex.statuscode
