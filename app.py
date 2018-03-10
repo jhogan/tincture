@@ -6,9 +6,14 @@ from pprint import pprint
 import traceback
 import re
 import os
+from configfile import configfile
 
 class application:
     def __init__(self):
+        # Set cfg.file to load the configfile singleton with config data. From
+        # here on out, the configfile singleton will have config data available.
+        cfg = configfile.getinstance()
+        cfg.file = os.environ['EPIPHANY_YAML']
 
         self.clear()
 
