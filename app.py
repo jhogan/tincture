@@ -1,13 +1,15 @@
-import json
-import sys
+from configfile import configfile
 from functools import reduce
-import pdb; B=pdb.set_trace
 from pprint import pprint
-import traceback
-import re
+import json
 import os
+import pdb; B=pdb.set_trace
+import re
+import sys
+import traceback
 
 class application:
+    Logformat = '"{0} {1}.{2}({3})" {4} {5}'
     def __init__(self):
         self.clear()
 
@@ -98,6 +100,11 @@ class application:
 
     def __call__(self, env, sres):
         statuscode = None
+        log = None
+
+        try:    log = configfile.getinstance().logs.default
+        except: pass
+
         try:
             self.clear()
 
@@ -125,6 +132,8 @@ class application:
             data['__exception'] = None
 
         except Exception as ex:
+            if log: log.exception('')
+
             if isinstance(ex, httperror):
                 statuscode = ex.statuscode
             else:
@@ -156,7 +165,7 @@ class application:
 
             sres(statuscode, resheads)
             return iter([data])
-
+    
 class httperror(Exception):
     def __init__(self, statuscode, msg):
         self.statuscode = statuscode
