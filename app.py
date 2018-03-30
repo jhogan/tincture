@@ -154,6 +154,17 @@ class application:
                 statuscode = '200 OK'
 
         finally:
+            # Log
+            try:
+                d, env = self.requestdata, self.environment
+                addr, cls, meth, = env['REMOTE_ADDR'], d['__class'], d['__method']
+                args, st, ua = str(d['__args']), statuscode[:3], env['HTTP_USER_AGENT']
+                log.info (application.Logformat.format(addr, cls, meth, '',   st, ua))
+                log.debug(application.Logformat.format(addr, cls, meth, args, st, ua))
+            except:
+                pass
+
+            # Return data
             data = json.dumps(data)
             data = bytes(data, 'utf-8')
 
