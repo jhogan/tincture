@@ -127,7 +127,8 @@ class application:
                 if len(br):
                     statuscode = '422 Unprocessable Entity'
             except KeyError:
-                pass
+                # If action return no __brokenrules
+                data['__brokenrules'] = ''
 
             data['__exception'] = None
 
