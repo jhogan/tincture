@@ -148,7 +148,10 @@ class application:
 
             tb = [re.split('\n +', f.strip()) for f in tb]
 
-            data = {'__exception': repr(ex), '__traceback': tb}
+            data = {'__exception': type(ex).__name__ + ': ' + str(ex),
+                    '__traceback': tb,
+                    '__brokenrules': []
+                   }
 
         else:
             if not statuscode:
