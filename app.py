@@ -12,6 +12,7 @@ class application:
     Logformat = '"{0} {1}.{2}({3})" {4} {5}'
     def __init__(self):
         self.clear()
+        self.breakonexception = False
 
     def clear(self):
         self._requestbody = None
@@ -133,6 +134,11 @@ class application:
             data['__exception'] = None
 
         except Exception as ex:
+            if self.breakonexception:
+                if not isinstance(ex, httperror):
+                    print(ex)
+                    pdb.post_mortem(ex.__traceback__)
+            
             if log: log.exception('')
 
             if isinstance(ex, httperror):
