@@ -53,6 +53,15 @@ class application:
             import ctrl
         except ImportError as ex:
             raise ImportError('Error importing controller: ' + str(ex))
+
+        msg = 'Class not found'
+        try:
+            cls = sys.modules['ctrl'].__dict__[cls]
+        except:
+            raise http404(msg)
+
+        if not isinstance(cls, type) or cls.__module__ != ctrl.__name__:
+            raise http404(msg)
         
     @property
     def requestsize(self):
